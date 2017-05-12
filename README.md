@@ -3,10 +3,10 @@
 
 ### Dependencies
 * Depends on [ccdproc](https://github.com/astropy/ccdproc), [astropy](http://www.astropy.org/), [numpy](http://www.numpy.org/)
-```bash
-pip install ccdproc
-pip install astropy
-pip install numpy
+```sh
+$ pip install ccdproc
+$ pip install astropy
+$ pip install numpy
 ```
 
 ### TODO
