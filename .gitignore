@@ -1,0 +1,4 @@
+*.fit
+*.fits
+*.list
+data_test/*
