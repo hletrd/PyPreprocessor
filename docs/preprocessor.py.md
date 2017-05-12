@@ -1,4 +1,8 @@
 ## preprocessor.py
+### Example
+```sh
+$ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterdark_300.0_-20.0.fits --masterflat=masterflat_L_-20.0.fits --light=light.list
+```
 ### Options
 * ```--bias```
   * List of bias files.
