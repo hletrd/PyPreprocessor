@@ -56,3 +56,12 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--output```
   * Output file name for final light frame combined and calibrated.
   * Will be automatically generated if not given.
+* ```--fits_header_exptime```
+  * Name of FITS header contains exposure time.
+  * Default value is ```EXPTIME```
+* ```--fits_header_ccdtemp```
+  * Name of FITS header contains temperature of CCD sensor.
+  * Default value is ```CCD-TEMP```
+* ```--fits_header_filter```
+  * Name of FITS header contains information of filter.
+  * Default value is ```FILTER```

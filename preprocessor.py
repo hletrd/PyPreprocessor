@@ -30,6 +30,12 @@ parser.add_argument('--output', default='light_combined')
 
 parser.add_argument('--crrejection', default='0')
 
+parser.add_argument('--fits_header_exptime', default='EXPTIME')
+parser.add_argument('--fits_header_ccdtemp', default='CCD-TEMP')
+parser.add_argument('--fits_header_filter', default='FILTER')
+
+
+
 args = parser.parse_args()
 
 def error(description):
@@ -84,12 +90,12 @@ if args.masterbias == None and args.bias != None:
 				log("Using bias file: " + i)
 				headers = dict(hdulist[0].header)
 				if temperature == False:
-					temperature = headers['CCD-TEMP']
+					temperature = headers[args.fits_header_ccdtemp]
 					log("Temperature: " + str(temperature) + "°C")
 				else:
-					if temperature != headers['CCD-TEMP']:
-						warning("Temperature mismatch: " + i + " (" + str(headers['CCD-TEMP']) + "°C)")
-				exptime = headers['EXPTIME']
+					if temperature != headers[args.fits_header_ccdtemp]:
+						warning("Temperature mismatch: " + i + " (" + str(headers[args.fits_header_ccdtemp]) + "°C)")
+				exptime = headers[args.fits_header_exptime]
 				if exptime != 0.0:
 					warning("Exposure time is not 0 second: " + i + " (" + str(exptime) + " second(s))")
 			except OSError:
@@ -118,8 +124,8 @@ if args.masterbias == None and args.bias != None:
 	bias = combine(biaslist_real, output_file=mbias, method=args.bias_method, unit='adu', sigma_clip=bias_sigmaclip)
 
 	hdulist = fits.open(mbias, mode='update')
-	hdulist[0].header.set('EXPTIME', 0.0)
-	hdulist[0].header.set('CCD-TEMP', temperature)
+	hdulist[0].header.set(args.fits_header_exptime, 0.0)
+	hdulist[0].header.set(args.fits_header_ccdtemp, temperature)
 	hdulist.flush()
 	hdulist.close()
 
@@ -138,8 +144,8 @@ elif args.masterbias != None:
 
 	log("Using master bias file: " + mbias)
 	headers = dict(hdulist[0].header)
-	log("Master bias temperature: " + str(headers['CCD-TEMP']) + "°C")
-	exptime = headers['EXPTIME']
+	log("Master bias temperature: " + str(headers[args.fits_header_ccdtemp]) + "°C")
+	exptime = headers[args.fits_header_exptime]
 	if exptime != 0.0:
 		warning("Exposure time is not 0 second: " + str(exptime) + " second(s)")
 
@@ -181,12 +187,12 @@ if args.masterdark == None and args.dark != None:
 				log("Using dark file: " + i)
 				headers = dict(hdulist[0].header)
 				if temperature == False:
-					temperature = headers['CCD-TEMP']
+					temperature = headers[args.fits_header_ccdtemp]
 					log("Temperature: " + str(temperature) + "°C")
 				else:
-					if temperature != headers['CCD-TEMP']:
-						warning("Temperature mismatch: " + i + " (" + str(headers['CCD-TEMP']) + "°C)")
-				exptime = headers['EXPTIME']
+					if temperature != headers[args.fits_header_ccdtemp]:
+						warning("Temperature mismatch: " + i + " (" + str(headers[args.fits_header_ccdtemp]) + "°C)")
+				exptime = headers[args.fits_header_exptime]
 				darkscales.append(args.dark_exptime/exptime)
 			except OSError:
 				warning("Not proper FITS format: " + i)
@@ -220,8 +226,8 @@ if args.masterdark == None and args.dark != None:
 	dark.write(mdark)
 
 	hdulist = fits.open(mdark, mode='update')
-	hdulist[0].header.set('EXPTIME', args.dark_exptime)
-	hdulist[0].header.set('CCD-TEMP', temperature)
+	hdulist[0].header.set(args.fits_header_exptime, args.dark_exptime)
+	hdulist[0].header.set(args.fits_header_ccdtemp, temperature)
 	darkexp = args.dark_exptime
 	hdulist.flush()
 	hdulist.close()
@@ -242,10 +248,10 @@ elif args.masterdark != None:
 
 	log("Using master dark file: " + mdark)
 	headers = dict(hdulist[0].header)
-	log("Master dark temperature: " + str(headers['CCD-TEMP']) + "°C")
-	log("Master dark exposure: " + str(headers['EXPTIME']) + " second(s)")
+	log("Master dark temperature: " + str(headers[args.fits_header_ccdtemp]) + "°C")
+	log("Master dark exposure: " + str(headers[args.fits_header_exptime]) + " second(s)")
 
-	darkexp = headers['EXPTIME']
+	darkexp = headers[args.fits_header_exptime]
 
 	dark = CCDData.read(mdark, unit='adu')
 
@@ -285,17 +291,17 @@ if args.masterflat == None and args.flat != None:
 				log("Using flat file: " + i)
 				headers = dict(hdulist[0].header)
 				if temperature == False:
-					temperature = headers['CCD-TEMP']
+					temperature = headers[args.fits_header_ccdtemp]
 					log("Temperature: " + str(temperature) + "°C")
 				else:
-					if temperature != headers['CCD-TEMP']:
-						warning("Temperature mismatch: " + i + " (" + str(headers['CCD-TEMP']) + "°C)")
-				exptime = headers['EXPTIME']
+					if temperature != headers[args.fits_header_ccdtemp]:
+						warning("Temperature mismatch: " + i + " (" + str(headers[args.fits_header_ccdtemp]) + "°C)")
+				exptime = headers[args.fits_header_exptime]
 				if flatfilter == False:
-					flatfilter = headers['FILTER'].strip()
+					flatfilter = headers[args.fits_header_filter].strip()
 				else:
-					if flatfilter != headers['FILTER'].strip():
-						warning("Filter mismatch: " + i + " (" + headers['FILTER'].strip() + " filter)")
+					if flatfilter != headers[args.fits_header_filter].strip():
+						warning("Filter mismatch: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
 				log("Subtracting dark and bias...")
 				flats.append(CCDData.read(i, unit='adu'))
 				flats[flatcnt] = ccd_process(flats[flatcnt], master_bias=bias, dark_frame=dark, dark_exposure=darkexp * units.s, data_exposure=exptime * units.s, dark_scale=True)
@@ -345,12 +351,12 @@ elif args.masterflat != None:
 
 	log("Using master flat file: " + mflat)
 	headers = dict(hdulist[0].header)
-	log("Master flat temperature: " + str(headers['CCD-TEMP']) + "°C")
-	log("Master flat filter: " + headers['FILTER'].strip())
+	log("Master flat temperature: " + str(headers[args.fits_header_ccdtemp]) + "°C")
+	log("Master flat filter: " + headers[args.fits_header_filter].strip())
 
 
 	flat = CCDData.read(mflat, unit='adu')
-	flatfilter = headers['FILTER'].strip()
+	flatfilter = headers[args.fits_header_filter].strip()
 
 
 
@@ -389,23 +395,23 @@ if args.light != None:
 				log("Using light file: " + i)
 				headers = dict(hdulist[0].header)
 				if temperature == False:
-					temperature = headers['CCD-TEMP']
+					temperature = headers[args.fits_header_ccdtemp]
 					log("Temperature: " + str(temperature) + "°C")
 				else:
 					log("Temperature: " + str(temperature) + "°C")
-					if temperature != headers['CCD-TEMP']:
-						warning("Temperature mismatch: " + i + " (" + str(headers['CCD-TEMP']) + "°C)")
+					if temperature != headers[args.fits_header_ccdtemp]:
+						warning("Temperature mismatch: " + i + " (" + str(headers[args.fits_header_ccdtemp]) + "°C)")
 				if exptime == False:
-					exptime = headers['EXPTIME']
-				elif exptime != headers['EXPTIME']:
-					warning("Exposure time mismatch: " + i + " (" + str(headers['EXPTIME']) + "s)")
-					exptime = headers['EXPTIME']
+					exptime = headers[args.fits_header_exptime]
+				elif exptime != headers[args.fits_header_exptime]:
+					warning("Exposure time mismatch: " + i + " (" + str(headers[args.fits_header_exptime]) + "s)")
+					exptime = headers[args.fits_header_exptime]
 				exptimesum += exptime
 				if lightfilter == False:
-					lightfilter = headers['FILTER'].strip()
+					lightfilter = headers[args.fits_header_filter].strip()
 				else:
-					if lightfilter != headers['FILTER'].strip():
-						warning("Filter mismatch: " + i + " (" + headers['FILTER'].strip() + " filter)")
+					if lightfilter != headers[args.fits_header_filter].strip():
+						warning("Filter mismatch: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
 				
 				lights.append(CCDData.read(i, unit='adu'))
 
@@ -418,7 +424,7 @@ if args.light != None:
 				if flatcal == True:
 					log("Calibrating flat...")
 					if lightfilter != flatfilter:
-						warning("Filter mismatch with flat: " + i + " (" + headers['FILTER'].strip() + " filter)")
+						warning("Filter mismatch with flat: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
 					lights[lightcnt] = flat_correct(lights[lightcnt], flat)
 				lightcnt = lightcnt + 1
 			except OSError:
