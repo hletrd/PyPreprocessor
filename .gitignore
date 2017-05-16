@@ -2,3 +2,4 @@
 *.fits
 *.list
 data_test/*
+test.py
