@@ -399,7 +399,13 @@ if args.light != None:
 				hdulist = fits.open(i)
 				
 				log("Using light file: " + i)
-				headers = dict(hdulist[0].header)
+				try:
+					headers = dict(hdulist[0].header)
+				except:
+					log("Error in header: " + i)
+					log("Try to fix...")
+					hdulist.verify('fix')
+					headers = dict(hdulist[0].header)
 				if temperature == False:
 					temperature = headers[args.fits_header_ccdtemp]
 					log("Temperature: " + str(temperature) + "°C")
@@ -407,12 +413,12 @@ if args.light != None:
 					log("Temperature: " + str(temperature) + "°C")
 					if temperature != headers[args.fits_header_ccdtemp]:
 						warning("Temperature mismatch: " + i + " (" + str(headers[args.fits_header_ccdtemp]) + "°C)")
+				exptimenow = headers[args.fits_header_exptime]
 				if exptime == False:
-					exptime = headers[args.fits_header_exptime]
-				elif exptime != headers[args.fits_header_exptime]:
-					warning("Exposure time mismatch: " + i + " (" + str(headers[args.fits_header_exptime]) + "s)")
-					exptime = headers[args.fits_header_exptime]
-				exptimesum += exptime
+					exptime = exptimenow
+				elif exptime != exptimenow:
+					warning("Exposure time mismatch: " + i + " (" + str(exptimenow) + "s)")
+				exptimesum += exptimenow
 				if lightfilter == False:
 					lightfilter = headers[args.fits_header_filter].strip()
 				else:
@@ -426,12 +432,16 @@ if args.light != None:
 					lights[lightcnt] = subtract_bias(lights[lightcnt], bias)
 				if darkcal == True:
 					log("Calibrating dark...")
-					lights[lightcnt] = subtract_dark(lights[lightcnt], dark, dark_exposure=darkexp * units.s, data_exposure=exptime * units.s, scale=True)
+					lights[lightcnt] = subtract_dark(lights[lightcnt], dark, dark_exposure=darkexp * units.s, data_exposure=exptimenow * units.s, scale=True)
 				if flatcal == True:
 					log("Calibrating flat...")
 					if lightfilter != flatfilter:
 						warning("Filter mismatch with flat: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
 					lights[lightcnt] = flat_correct(lights[lightcnt], flat)
+
+				#regularize exposure time
+				lights[lightcnt] = lights[lightcnt] / exptimenow * exptime
+
 				lightcnt = lightcnt + 1
 			except OSError:
 				warning("Not proper FITS format: " + i)
