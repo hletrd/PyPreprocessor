@@ -35,7 +35,6 @@ parser.add_argument('--fits_header_ccdtemp', default='CCD-TEMP')
 parser.add_argument('--fits_header_filter', default='FILTER')
 
 
-
 args = parser.parse_args()
 
 def error(description):
@@ -154,7 +153,8 @@ elif args.masterbias != None:
 
 if args.masterdark == None and args.dark != None:
 	if bias == None:
-		error("Master bias needed to create master dark frame.")
+		#error("Master bias needed to create master dark frame.")
+		warning("No master bias provided. Stacking without bias calibration.")
 	darkcal = True
 	#Creating master dark
 
@@ -222,7 +222,8 @@ if args.masterdark == None and args.dark != None:
 
 	dark = combine(darklist_real, method=args.dark_method, unit='adu', sigma_clip=dark_sigmaclip, scale=darkscales)
 
-	dark = ccd_process(dark, master_bias=bias)
+	if bias != None:
+		dark = ccd_process(dark, master_bias=bias)
 	dark.write(mdark)
 
 	hdulist = fits.open(mdark, mode='update')
@@ -257,8 +258,10 @@ elif args.masterdark != None:
 
 
 if args.masterflat == None and args.flat != None:
-	if bias == None or dark == None:
-		error("Master bias and master dark needed to create master flat frame.")
+	if dark == None:
+		error("Master dark needed to create master flat frame.")
+	if bias == None:
+		warning("No master bias provided. Stacking without bias calibration.")
 	flatcal = True
 	#Creating master flat
 
@@ -302,9 +305,12 @@ if args.masterflat == None and args.flat != None:
 				else:
 					if flatfilter != headers[args.fits_header_filter].strip():
 						warning("Filter mismatch: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
-				log("Subtracting dark and bias...")
+				log("Subtracting dark and/or bias...")
 				flats.append(CCDData.read(i, unit='adu'))
-				flats[flatcnt] = ccd_process(flats[flatcnt], master_bias=bias, dark_frame=dark, dark_exposure=darkexp * units.s, data_exposure=exptime * units.s, dark_scale=True)
+				if bias != None:
+					flats[flatcnt] = ccd_process(flats[flatcnt], master_bias=bias, dark_frame=dark, dark_exposure=darkexp * units.s, data_exposure=exptime * units.s, dark_scale=True)
+				else:
+					flats[flatcnt] = ccd_process(flats[flatcnt], dark_frame=dark, dark_exposure=darkexp * units.s, data_exposure=exptime * units.s, dark_scale=True)
 				avg = np.mean(flats[flatcnt])
 				log("Average ADU: " + str(avg))
 
