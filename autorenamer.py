@@ -3,7 +3,8 @@ import argparse, os, re, copy
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--list', default='list.list')
-parser.add_argument('--rename-by', default='DATA-TYP')
+parser.add_argument('--rename_by', default='DATA-TYP')
+parser.add_argument('--reparse', default=0, type=int)
 
 args = parser.parse_args()
 
@@ -30,8 +31,11 @@ for i in lst:
 		hdulist.verify('fix')
 		log("Loading file: " + i)
 		headers = dict(hdulist[0].header)
-		typ = headers['DATA-TYP'].strip()
-		newname = typ+'_'+i.split('_')[-1]
+		typ = headers[args.rename_by].strip()
+		if args.reparse == 1:
+			newname = typ + '_' + i.split('_')[-1]
+		else:
+			newname = typ + '_' + i
 		log("Renamed to " + newname)
 		os.rename(i, newname)
 	#except:
