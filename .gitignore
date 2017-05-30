@@ -3,3 +3,4 @@
 *.list
 data_test/*
 test.py
+dso.csv
