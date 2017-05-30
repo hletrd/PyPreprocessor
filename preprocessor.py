@@ -440,7 +440,7 @@ if args.light != None:
 					lights[lightcnt] = flat_correct(lights[lightcnt], flat)
 
 				#regularize exposure time
-				lights[lightcnt] = lights[lightcnt] / exptimenow * exptime
+				lights[lightcnt] = lights[lightcnt].multiply(exptime / exptimenow)
 
 				lightcnt = lightcnt + 1
 			except OSError:
