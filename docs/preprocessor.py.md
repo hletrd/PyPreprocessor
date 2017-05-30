@@ -4,6 +4,7 @@
 $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterdark_300.0_-20.0.fits --masterflat=masterflat_L_-20.0.fits --light=light.list
 ```
 ### Options
+#### Bias
 * ```--bias```
   * List of bias files.
   * The list contains name of each bias files to be combined, one by one in each line.
@@ -16,6 +17,8 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--bias_sigmaclip```
   * Pass ```1``` to enable 10 pass 3-sigma clipping when combining bias frames, or pass ```0``` to disable sigma clipping.
   * Default value is ```1```.
+  
+#### Dark
 * ```--dark```
   * List of dark files.
   * The list contains name of each dark files to be combined, one by one in each line.
@@ -32,6 +35,8 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--dark_sigmaclip```
   * Pass ```1``` to enable 10 pass 3-sigma clipping when combining dark frames, or pass ```0``` to disable sigma clipping.
   * Default value is ```1```.
+  
+#### Flat
 * ```--flat```
   * List of flat files.
   * The list contains name of each flat files to be combined, one by one in each line.
@@ -44,6 +49,8 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--flat_sigmaclip```
   * Pass ```1``` to enable 10 pass 3-sigma clipping when combining flat frames, or pass ```0``` to disable sigma clipping.
   * Default value is ```1```.
+
+#### Light 
 * ```--light```
   * List of light files.
   * The list contains name of each light files to be combined, one by one in each line.
@@ -56,6 +63,8 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--output```
   * Output file name for final light frame combined and calibrated.
   * Will be automatically generated if not given.
+  
+#### FITS headers
 * ```--fits_header_exptime```
   * Name of FITS header contains exposure time.
   * Default value is ```EXPTIME```
