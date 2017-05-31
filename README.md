@@ -15,14 +15,17 @@ $ pip install numpy
 * Simple preprocessor performs bias / dark / flat calibration.
 * Full options are described [here](docs/preprocessor.py.md).
 
+#### ```controller.py```
+* Scripts for controlling Meade LX200-compatible equatorial mounts.
+
+#### ```autorenamer.py```
+* Automatically renames(add prefix) FITS file according to their headers.
+
 ### TODO
 #### ```preprocessor.py```
 * Support GPU computing (based on [Pytorch](http://pytorch.org/)? or maybe just [OpenCL](https://www.khronos.org/opencl/)?) for calibration, like [GPUPhotometry](https://github.com/hletrd/GPUPhotometry).
  * GPUPhotometry was also a simple preprocessing program utilizes GPU, but it does not support various options, and does not support Windows.
 * Adding options for masterbias, masterdark, masterflat output.
-
-#### ```controller.py``` (?)
-* Scripts for controlling Meade LX200-compatible equatorial mounts.
 
 ### Known bugs
 #### ```preprocessor.py```
