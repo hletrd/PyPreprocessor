@@ -36,7 +36,9 @@ txt = {
 	'connectfailed': '연결 실패',
 	'speed': '속도',
 	'nightmodeon': '야간 모드 켜기',
-	'nightmodeoff': '야간 모드 끄기'
+	'nightmodeoff': '야간 모드 끄기',
+	'sync': '선택한 대상에 Sync',
+	'park': 'Park'
 }
 
 db = 'dso.db'
@@ -44,12 +46,17 @@ dbc = sqlite3.connect(db, check_same_thread=False)
 dbc.text_factory = str
 c = dbc.cursor()
 
+db_star = 'star.db'
+dbc_star = sqlite3.connect(db_star, check_same_thread=False)
+dbc_star.text_factory = str
+c_star = dbc_star.cursor()
+
 ser = serial.Serial()
 ser.baudrate = 9600
 ser.timeout = 0.1
 
-dsodata = []
-selectedDSO = None
+objdata = []
+selectedobj = None
 
 status = False
 
@@ -73,15 +80,20 @@ def convDEC(DEC):
 def serialwrite(data):
 	global ser
 	print(data)
-	#ser.write(data.encode())
+	try:
+		ser.write(data.encode())
+	except:
+		print("Serial Error")
 
 def serialread(length):
 	global ser
-	if length == 9:
-		return '04:54:23#'
-	else:
-		return "-32*34'23#"
-	#return ser.read(length).decode('utf-8')
+	try:
+		return ser.read(length).decode('utf-8')
+	except:
+		if length == 9:
+			return '04:54:23#'
+		else:
+			return "-32*34'23#"
 
 def makestatus(status):
 	return '<b>' + txt['status'] + ' </b>' + status
@@ -121,12 +133,12 @@ class WMain(QWidget):
 		self.labelCat.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
 		self.btnSlew = QPushButton(txt['slew'], self)
-		self.btnSlew.resize(200, 30)
-		self.btnSlew.move(70, 250)
+		self.btnSlew.resize(200, 35)
+		self.btnSlew.move(70, 245)
 		self.btnSlew.clicked.connect(self.click_btnSlew)
 
 		self.btnStopSlew = QPushButton(txt['stopslew'], self)
-		self.btnStopSlew.resize(200, 30)
+		self.btnStopSlew.resize(200, 35)
 		self.btnStopSlew.move(70, 285)
 		self.btnStopSlew.clicked.connect(self.click_btnStopSlew)
 
@@ -179,11 +191,11 @@ class WMain(QWidget):
 		self.labelSpeed.setText('<b>' + txt['speed'] + '</b>')
 
 		self.cmbSpeed = QComboBox(self)
-		self.cmbSpeed.addItems(["Guide", "Center", "Find", "Slew"])
+		self.cmbSpeed.addItems(["Stop", "Guide", "Center", "Find", "Slew"])
 		self.cmbSpeed.currentIndexChanged.connect(self.changeSpeed)
 		self.cmbSpeed.resize(85, 25)
-		self.cmbSpeed.move(250, 370)
-		self.cmbSpeed.setCurrentIndex(3)
+		self.cmbSpeed.move(240, 375)
+		self.cmbSpeed.setCurrentIndex(4)
 
 
 		self.btnNightMode = QPushButton(txt['nightmodeon'], self)
@@ -191,6 +203,18 @@ class WMain(QWidget):
 		self.btnNightMode.move(20, 480)
 		self.btnNightMode.clicked.connect(self.setNightMode)
 		self.nightmode = False
+
+		self.btnSync = QPushButton(txt['sync'], self)
+		self.btnSync.resize(180, 40)
+		self.btnSync.move(150, 190)
+		self.btnSync.clicked.connect(self.click_btnSync)
+
+
+		#self.btnPark = QPushButton(txt['park'], self)
+		#self.btnPark.resize(100, 25)
+		#self.btnPark.move(230, 480)
+		#self.btnPark.clicked.connect(self.click_btnPark)
+
 		
 		self.moving = [0, 0, 0, 0]
 
@@ -201,6 +225,8 @@ class WMain(QWidget):
 		self.setFixedSize(340, 520)
 		self.setWindowTitle(txt['title'])
 		self.setStyle(QStyleFactory.create('Fusion'))
+
+		self.setStyleSheet('color: black;')
 		self.show()
 
 	def closeEvent(self, event):
@@ -229,23 +255,50 @@ class WMain(QWidget):
 		global c
 		c.execute("SELECT * FROM DSO WHERE catalogue || cid LIKE ? ORDER BY catalogue, cid", ('%' + self.inpCat.text().replace(' ', '') + '%',))
 		#print(c.fetchall())
-		global dsodata
-		dsodata = c.fetchall()
+		global objdata
+		objdata = c.fetchall()
+
+		global c_star
+		c_star.execute("SELECT * FROM star WHERE name LIKE ? ORDER BY name", ('%' + self.inpCat.text().replace(' ', '') + '%',))
+		objdata += c_star.fetchall()
+
 		model = QStandardItemModel(self.listCat)
-		for i in dsodata:
-			item = QStandardItem(getDSOName(i))
-			model.appendRow(item)
+		for i in objdata:
+			if len(i) == 7: #star
+				item = QStandardItem(i[1])
+				model.appendRow(item)
+			else:
+				item = QStandardItem(getDSOName(i))
+				model.appendRow(item)
+
 		self.listCat.setModel(model)
 		self.listCat.selectionModel().selectionChanged.connect(self.selectCat)
 
+
 	def selectCat(self, selected):
-		global dsodata, selectedDSO
+		global objdata, selectedobj
 		selected = selected.indexes()[0].data()
-		for i in dsodata:
-			if getDSOName(i) == selected:
-				selectedDSO = i
-				RA = convRA(selectedDSO[2])
-				DEC = convDEC(selectedDSO[3])
+		for i in objdata:
+			if len(i) == 7: #star
+				if i[1] == selected:
+					selectedobj = i
+					RA = convRA(selectedobj[2])
+					DEC = convDEC(selectedobj[3])
+					RA = str(RA[0]) + "h " + str(RA[1]) + "m " + str(RA[2]) + "s"
+					DEC = ("-" if DEC[0] < 0 else "") + str(DEC[1]) + "° " + str(DEC[2]) + "m " + str(DEC[3]) + "s"
+
+					self.labelCat.setText(
+						"<b>" + txt['objectname'] + " </b>" + selected  + "<br />" +
+						"<b>" + txt['objectra'] + " </b>" + RA + "<br />" +
+						"<b>" + txt['objectdec'] + " </b>" + DEC + "<br />" +
+						"<b>" + txt['constellation'] + " </b>" + i[4] + "<br />" +
+						"<b>" + txt['magnitude'] + " </b>" + str(i[5]) + "<br />"
+						)
+					break
+			elif getDSOName(i) == selected:
+				selectedobj = i
+				RA = convRA(selectedobj[2])
+				DEC = convDEC(selectedobj[3])
 				RA = str(RA[0]) + "h " + str(RA[1]) + "m " + str(RA[2]) + "s"
 				DEC = ("-" if DEC[0] < 0 else "") + str(DEC[1]) + "° " + str(DEC[2]) + "m " + str(DEC[3]) + "s"
 
@@ -301,8 +354,8 @@ class WMain(QWidget):
 				self.moving[direction] = 0
 
 	def click_btnSlew(self):
-		if selectedDSO != None:
-			DEC = convDEC(selectedDSO[3])
+		if selectedobj != None:
+			DEC = convDEC(selectedobj[3])
 			sign = "-" if DEC[0] < 0 else "+"
 			for i in range(1, 4):
 				if DEC[i] < 10:
@@ -310,7 +363,7 @@ class WMain(QWidget):
 				else:
 					DEC[i] = str(DEC[i])
 
-			RA = convRA(selectedDSO[2])
+			RA = convRA(selectedobj[2])
 			for i in range(0, 3):
 				if RA[i] < 10:
 					RA[i] = '0' + str(RA[i])
@@ -365,24 +418,50 @@ class WMain(QWidget):
 		self.Mmove(3)
 
 	def changeSpeed(self, item):
-		if item == 0:
+		if item == 1:
 			serialwrite(':RG#')
-		elif item == 1:
-			serialwrite(':RC#')
 		elif item == 2:
-			serialwrite(':RM#')
+			serialwrite(':RC#')
 		elif item == 3:
+			serialwrite(':RM#')
+		elif item == 4:
 			serialwrite(':RS#')
+		elif item == 0:
+			serialwrite(':Q#')
 
 	def setNightMode(self):
 		if self.nightmode == True:
 			self.nightmode = False
-			self.setStyleSheet('')
+			self.setStyleSheet('color: black;') #giving nothing may show strange theme on macOS
 			self.btnNightMode.setText(txt['nightmodeon'])
 		else:
 			self.nightmode = True
 			self.setStyleSheet('background-color: red;')
 			self.btnNightMode.setText(txt['nightmodeoff'])
+
+	def click_btnSync(self):
+		if selectedobj != None:
+			DEC = convDEC(selectedobj[3])
+			sign = "-" if DEC[0] < 0 else "+"
+			for i in range(1, 4):
+				if DEC[i] < 10:
+					DEC[i] = '0' + str(DEC[i])
+				else:
+					DEC[i] = str(DEC[i])
+
+			RA = convRA(selectedobj[2])
+			for i in range(0, 3):
+				if RA[i] < 10:
+					RA[i] = '0' + str(RA[i])
+				else:
+					RA[i] = str(RA[i])
+			serialwrite(':Sd' + sign + DEC[1] + '*' + DEC[2] + ':' + DEC[3] + '#')
+			serialwrite(':Sr' + RA[0] + ':' + RA[1] + ':' + RA[2] + '#')
+			serialwrite(':CM#')
+
+	#TODO: after supporting local time, location
+	#def click_btnPark(self):
+	#	pass
 
 
 
