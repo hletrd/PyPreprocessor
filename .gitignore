@@ -4,3 +4,6 @@
 data_test/*
 test.py
 dso.csv
+build
+dist
+__pycache__
