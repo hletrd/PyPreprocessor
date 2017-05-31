@@ -5,3 +5,7 @@ data_test/*
 test.py
 dso.csv
 stars.txt
+build
+dist
+controller.spec
+__pycache__
