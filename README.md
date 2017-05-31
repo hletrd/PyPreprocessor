@@ -27,6 +27,14 @@ $ pip install numpy
  * GPUPhotometry was also a simple preprocessing program utilizes GPU, but it does not support various options, and does not support Windows.
 * Adding options for masterbias, masterdark, masterflat output.
 
+#### ```controller.py```
+* Support local time/location
+* Telescope park/unpark (zero position)
+* n-star align
+* Altitude/azimuth display
+* Status display
+* Slew to custom coordinates
+
 ### Known bugs
 #### ```preprocessor.py```
 * Even if exposure time of dark frames are different from each other, each frame cannot be weighted one by one, but just devided by exposure time of each dark frames, and summed.
