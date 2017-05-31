@@ -11,10 +11,11 @@ import sys, argparse
 def log(description):
 	print(description)
 
+v='0.1.1'
 
 txt = {
 	'inpserial': '시리얼 포트',
-	'title': 'CRUX-170HD Controller',
+	'title': 'CRUX Controller ' + v,
 	'connect': '연결',
 	'message': '메시지',
 	'quit': '종료하시겠습니까?',
@@ -38,7 +39,9 @@ txt = {
 	'nightmodeon': '야간 모드 켜기',
 	'nightmodeoff': '야간 모드 끄기',
 	'sync': '선택한 대상에 Sync',
-	'park': 'Park'
+	'park': 'Park',
+	'warning': '경고',
+	'belowhorizon': '대상이 지평선 아래에 있습니다.'
 }
 
 db = 'dso.db'
@@ -58,15 +61,13 @@ ser.timeout = 0.1
 objdata = []
 selectedobj = None
 
-status = False
-
 def getDSOName(dso):
 	return dso[7] + ' ' + str(dso[8])
 
 def convRA(RA):
 	RAH = int(RA)
 	RAM = int((RA-RAH)*60)
-	RAS = int(((RA-RAH)*60-RAM)*60)
+	RAS = int(round(((RA-RAH)*60-RAM)*60))
 	return [RAH, RAM, RAS]
 
 def convDEC(DEC):
@@ -74,7 +75,7 @@ def convDEC(DEC):
 	dectmp = abs(DEC)
 	DECD = int(dectmp)
 	DECM = int((dectmp-DECD)*60)
-	DECS = int(((dectmp-DECD)*60-DECM)*60)
+	DECS = int(round(((dectmp-DECD)*60-DECM)*60))
 	return [sign, DECD, DECM, DECS]
 
 def serialwrite(data):
@@ -85,15 +86,22 @@ def serialwrite(data):
 	except:
 		print("Serial Error")
 
+def flushserial():
+	global ser 
+	ser.reset_input_buffer()
+
 def serialread(length):
 	global ser
 	try:
-		return ser.read(length).decode('utf-8')
+		data = ser.read(length).decode('utf-8')
+		print('"' + data + '"')
+		return data
 	except:
-		if length == 9:
-			return '04:54:23#'
-		else:
-			return "-32*34'23#"
+		#if length == 9:
+		#	return '04:54:23#'
+		#else:
+		#	return "-32*34'23#"
+		pass
 
 def makestatus(status):
 	return '<b>' + txt['status'] + ' </b>' + status
@@ -155,7 +163,7 @@ class WMain(QWidget):
 
 		self.timerMount = QTimer(self)
 		self.timerMount.timeout.connect(self.runTimerMount)
-		self.timerMount.start(250)
+		self.timerMount.start(500)
 
 		font = QFont()
 		font.setPointSize(18)
@@ -221,6 +229,7 @@ class WMain(QWidget):
 		self.MountRA = 0.
 		self.MountDEC = 0.
 		self.toggleTimer = 1
+		self.status = False
 
 		self.setFixedSize(340, 520)
 		self.setWindowTitle(txt['title'])
@@ -242,13 +251,14 @@ class WMain(QWidget):
 		try:
 			ser.port = self.inpSerial.text()
 			ser.open()
-			status = True
+			self.status = True
 			self.labelStatus.setText(makestatus(txt['connected']))
 			serialwrite(':RS#')
 		except:
-			status = False
+			self.status = False
 			self.labelStatus.setText(makestatus(txt['connectfailed']))
 		serialwrite(':Sr00:00:00#')
+		result = serialread(1)
 		#serialwrite(':U#')
 
 	def searchCat(self):
@@ -370,28 +380,51 @@ class WMain(QWidget):
 				else:
 					RA[i] = str(RA[i])
 			serialwrite(':Sd' + sign + DEC[1] + '*' + DEC[2] + ':' + DEC[3] + '#')
+			result = serialread(1)
 			serialwrite(':Sr' + RA[0] + ':' + RA[1] + ':' + RA[2] + '#')
+			result = serialread(1)
 			serialwrite(':MS#')
+			result = serialread(1)
+			if result == '0':
+				pass
+			elif result == '1':
+				msg = QMessageBox()
+				msg.setIcon(QMessageBox.Warning)
+				msg.setText(txt['belowhorizon'])
+				msg.setWindowTitle(txt['warning'])
+				msg.setStandardButtons(QMessageBox.Ok)
+				msg.exec_()
+				print('warning')
+			elif result == '2':
+				pass
 
 	def click_btnStopSlew(self):
 		serialwrite(':Q#')
 		serialwrite(':RC#')
 
 	def runTimerMount(self):
-		if status == True and self.toggleTimer == -1:
-			serialwrite(':GR#')
-			RAtmp = serialread(9)
-			RAtmp = RAtmp.split(':')
-			RAtmp[2] = RAtmp[2].replace('#', '')
-			self.MountRA = int(RAtmp[0]) + int(RAtmp[1]) / 60. + int(RAtmp[2]) / 60. / 60.
-		elif status == True:
-			serialwrite(':GD#')
-			DECtmp = serialread(10)
-			DECsign = -1 if DECtmp[0] == "-" else 1
-			DECD = int(DECtmp[1:3])
-			DECM = int(DECtmp[4:6])
-			DECS = int(DECtmp[7:9])
-			self.MountDEC = (int(DECD) + int(DECM) / 60. + int(DECS) / 60. / 60.) * DECsign
+		try:
+			if self.status == True and self.toggleTimer == -1:
+				serialwrite(':GR#')
+				RAtmp = serialread(9)
+				if RAtmp[-1] != '#':
+					raise IndexError
+				RAtmp = RAtmp.split(':')
+				RAtmp[2] = RAtmp[2].replace('#', '')
+				self.MountRA = int(RAtmp[0]) + int(RAtmp[1]) / 60. + int(RAtmp[2]) / 60. / 60.
+			elif self.status == True:
+				serialwrite(':GD#')
+				DECtmp = serialread(10)
+				if DECtmp[-1] != '#':
+					raise IndexError
+				DECsign = -1 if DECtmp[0] == "-" else 1
+				DECD = int(DECtmp[1:3])
+				DECM = int(DECtmp[4:6])
+				DECS = int(DECtmp[7:9])
+				self.MountDEC = (int(DECD) + int(DECM) / 60. + int(DECS) / 60. / 60.) * DECsign
+		except (IndexError, ValueError) as e:
+			flushserial()
+			pass
 		self.toggleTimer *= -1
 
 		RA = convRA(self.MountRA)
