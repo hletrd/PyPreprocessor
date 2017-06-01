@@ -193,7 +193,12 @@ if args.masterdark == None and args.dark != None:
 					if temperature != headers[args.fits_header_ccdtemp]:
 						warning("Temperature mismatch: " + i + " (" + str(headers[args.fits_header_ccdtemp]) + "°C)")
 				exptime = headers[args.fits_header_exptime]
-				darkscales.append(args.dark_exptime/exptime)
+				if bias != None:
+					darkscales.append(args.dark_exptime/exptime)
+					log("Scaling dark by " + str(args.dark_exptime/exptime))
+				else:
+					darkscales.append(1)
+					log("No bias provided: not scaling dark")
 			except OSError:
 				warning("Not proper FITS format: " + i)
 				darklist_real.remove(i)
