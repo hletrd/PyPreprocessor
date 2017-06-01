@@ -34,6 +34,7 @@ parser.add_argument('--fits_header_exptime', default='EXPTIME')
 parser.add_argument('--fits_header_ccdtemp', default='CCD-TEMP')
 parser.add_argument('--fits_header_filter', default='FILTER')
 
+parser.add_argument('--offset', default=None)
 
 args = parser.parse_args()
 
@@ -395,6 +396,18 @@ if args.light != None:
 
 	lightlist_real = copy.copy(lightlist)
 
+	offset = {}
+	if args.offset != None:
+		log("Loading offset...")
+		with open(args.offset, 'r') as f:
+			data = f.read().split("\n")
+			for i in data:
+				try:
+					record = i.split("\t")
+					offset[record[0]] = (int(record[1]), int(record[2]))
+				except:
+					pass
+
 	for i in lightlist:
 		if os.path.isfile(i) == False:
 			warning("Light file not found: " + i)
@@ -430,7 +443,18 @@ if args.light != None:
 					if lightfilter != headers[args.fits_header_filter].strip():
 						warning("Filter mismatch: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
 				
-				lights.append(CCDData.read(i, unit='adu'))
+				light_one = CCDData.read(i, unit='adu')
+				if args.offset != None:
+					try:
+						light_one = np.roll(light_one, -offset[i][0], axis=1)
+						light_one = np.roll(light_one, -offset[i][1], axis=0)
+						light_one = CCDData(light_one, unit='adu')
+						log("Shifted by " + str(-offset[i][0]) + ", " + str(-offset[i][1]))
+					except KeyError:
+						error("Offset not found for the image " + i)
+
+
+				lights.append(light_one)
 
 				if biascal == True:
 					log("Calibrating bias...")
