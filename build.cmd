@@ -1,1 +1,0 @@
-pyinstaller.exe controller.py --windowed --onefile --path C:\Python35\Lib\site-packages\PyQt5\Qt\bin --hidden-import=PyQt5 --noupx
