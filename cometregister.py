@@ -9,7 +9,7 @@ parser.add_argument('--xrange', default='350,650')
 parser.add_argument('--yrange', default='350,650')
 parser.add_argument('--movement_x', default=10, type=int)
 parser.add_argument('--movement_y', default=10, type=int)
-parser.add_argument('--output', default='output.txt')
+parser.add_argument('--output', default='offset.txt')
 
 args = parser.parse_args()
 
