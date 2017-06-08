@@ -444,15 +444,6 @@ if args.light != None:
 						warning("Filter mismatch: " + i + " (" + headers[args.fits_header_filter].strip() + " filter)")
 				
 				light_one = CCDData.read(i, unit='adu')
-				if args.offset != None:
-					try:
-						light_one = np.roll(light_one, -offset[i][0], axis=1)
-						light_one = np.roll(light_one, -offset[i][1], axis=0)
-						light_one = CCDData(light_one, unit='adu')
-						log("Shifted by " + str(-offset[i][0]) + ", " + str(-offset[i][1]))
-					except KeyError:
-						error("Offset not found for the image " + i)
-
 
 				lights.append(light_one)
 
@@ -470,6 +461,15 @@ if args.light != None:
 
 				#regularize exposure time
 				lights[lightcnt] = lights[lightcnt].multiply(exptime / exptimenow)
+
+				if args.offset != None:
+					try:
+						light_one = np.roll(light_one, -offset[i][0], axis=1)
+						light_one = np.roll(light_one, -offset[i][1], axis=0)
+						light_one = CCDData(light_one, unit='adu')
+						log("Shifted by " + str(-offset[i][0]) + ", " + str(-offset[i][1]))
+					except KeyError:
+						error("Offset not found for the image " + i)
 
 				lightcnt = lightcnt + 1
 			except OSError:
