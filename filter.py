@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--list', default='list.list')
 parser.add_argument('--output', default='output.list')
 parser.add_argument('--reference', default=False)
+parser.add_argument('--threshold', default=0.2, type=float)
 
 args = parser.parse_args()
 
@@ -52,7 +53,7 @@ for i in lst:
 			avg_tmp = np.mean(data)
 			log('Pixel value: ' + str(avg_tmp))
 			var = float(avg_tmp) / avg
-			if var > 1.2 or var < 0.8:
+			if var > 1 + args.threshold or var < args.threshold:
 				log('Filtering out the image ' + i)
 			else:
 				log('Accepted image ' + i)
