@@ -74,3 +74,8 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--fits_header_filter```
   * Name of FITS header contains information of filter.
   * Default value is ```FILTER```
+
+#### Image offset
+* ```--offset```
+  * Accepts offset file output from [cometregister.py](../cometregister.py).
+  * Automatically shifts each image before combining to make sure comet is aligned in final image.

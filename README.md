@@ -11,29 +11,22 @@ $ pip install numpy
 
 ### Components
 
+#### ```autorenamer.py```
+* Automatically renames(add prefix) FITS file according to their headers.
+
+#### ```cometregister.py```
+* Find comet in images, and make offset data to align comet in each image.
+
 #### ```preprocessor.py```
 * Simple preprocessor performs bias / dark / flat calibration.
 * Full options are described [here](docs/preprocessor.py.md).
-
-#### ```controller.py```
-* Scripts for controlling Meade LX200-compatible equatorial mounts.
-
-#### ```autorenamer.py```
-* Automatically renames(add prefix) FITS file according to their headers.
 
 ### TODO
 #### ```preprocessor.py```
 * Support GPU computing (based on [Pytorch](http://pytorch.org/)? or maybe just [OpenCL](https://www.khronos.org/opencl/)?) for calibration, like [GPUPhotometry](https://github.com/hletrd/GPUPhotometry).
  * GPUPhotometry was also a simple preprocessing program utilizes GPU, but it does not support various options, and does not support Windows.
 * Adding options for masterbias, masterdark, masterflat output.
-
-#### ```controller.py```
-* Support local time/location
-* Telescope park/unpark (zero position)
-* n-star align
-* Altitude/azimuth display
-* Status display
-* Slew to custom coordinates
+* Using [sum combiner](https://github.com/astropy/ccdproc/pull/508).
 
 ### Known bugs
 #### ```preprocessor.py```
