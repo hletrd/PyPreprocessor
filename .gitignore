@@ -9,3 +9,4 @@ build
 dist
 controller.spec
 __pycache__
+parser_*
