@@ -25,8 +25,8 @@ log("Loading file(s)...")
 
 
 for i in lst:
-	#try:
-	if True:
+	try:
+	#if True:
 		hdulist = fits.open(i)
 		hdulist.verify('fix')
 		log("Loading file: " + i)
@@ -38,5 +38,5 @@ for i in lst:
 			newname = typ + '_' + i
 		log("Renamed to " + newname)
 		os.rename(i, newname)
-	#except:
-	#	log("Error while reading file " + i)
+	except:
+		log("Error while reading file " + i)
