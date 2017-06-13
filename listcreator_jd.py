@@ -41,7 +41,6 @@ for i in lst:
 		log("Error while reading file " + i)
 
 JDs = sorted(JDs, key=lambda x: x[1])
-print(JDs)
 
 if args.time_start == None:
 	time_start = JDs[0][1]
@@ -59,12 +58,13 @@ while time_now <= JDs[-1][1]:
 	while cnt < len(JDs) and JDs[cnt][1] < time_now:
 		groups[-1].append(JDs[cnt])
 		cnt += 1
-	dirname = args.output_prefix + 'grouped_' + str(time_now - time_interval) + '_' + str(time_now)
-	log('Groupping ' + str(len(groups[-1])) + ' objects into ' + dirname)
-	try:
-		os.mkdir(dirname)
-	except:
-		pass
-	for i in groups[-1]:
-		os.rename(i[0], dirname + '/' + i[0])
+	if len(groups[-1]) > 0:
+		dirname = args.output_prefix + 'grouped_' + str(time_now - time_interval) + '_' + str(time_now)
+		log('Groupping ' + str(len(groups[-1])) + ' objects into ' + dirname)
+		try:
+			os.mkdir(dirname)
+		except:
+			pass
+		for i in groups[-1]:
+			os.rename(i[0], dirname + '/' + i[0])
 
