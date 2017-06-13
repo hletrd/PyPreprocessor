@@ -17,6 +17,9 @@ $ pip install numpy
 #### ```cometregister.py```
 * Find comet in images, and make offset data to align comet in each image.
 
+#### ```filter.py```
+* Filters out the image with significantly different average ADU compared to other images.
+
 #### ```preprocessor.py```
 * Simple preprocessor performs bias / dark / flat calibration.
 * Full options are described [here](docs/preprocessor.py.md).
