@@ -1,4 +1,4 @@
-## Python tools for astrophotography
+## Python tools for preprocess for astrophotography & astrophotometry
 * Compatible with Python 2/3
 
 ### Dependencies
