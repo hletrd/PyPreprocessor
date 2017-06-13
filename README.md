@@ -20,6 +20,9 @@ $ pip install numpy
 #### ```filter.py```
 * Filters out the image with significantly different average ADU compared to other images.
 
+#### ```listcreator_jd.py```
+* Classify images by time.
+
 #### ```preprocessor.py```
 * Simple preprocessor performs bias / dark / flat calibration.
 * Full options are described [here](docs/preprocessor.py.md).
