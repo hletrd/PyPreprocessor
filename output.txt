@@ -1,8 +1,0 @@
-./data_test/OBJECT_MTITI0000014415.fits	0	0
-./data_test/OBJECT_MTITI0000014416.fits	1	0
-./data_test/OBJECT_MTITI0000014417.fits	0	0
-./data_test/OBJECT_MTITI0000014418.fits	0	0
-./data_test/OBJECT_MTITI0000014419.fits	0	-1
-./data_test/OBJECT_MTITI0000014420.fits	1	0
-./data_test/OBJECT_MTITI0000014421.fits	1	0
-./data_test/OBJECT_MTITI0000014422.fits	1	0
