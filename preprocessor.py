@@ -34,6 +34,10 @@ parser.add_argument('--fits_header_exptime', default='EXPTIME')
 parser.add_argument('--fits_header_ccdtemp', default='CCD-TEMP')
 parser.add_argument('--fits_header_filter', default='FILTER')
 
+parser.add_argument('--filter_threshold')
+parser.add_argument('--header_from', default=None)
+
+
 parser.add_argument('--offset', default=None)
 
 args = parser.parse_args()
@@ -482,6 +486,8 @@ if args.light != None:
 	lightindex = 0
 	mlight = args.output + '_' + lightfilter + '_' + str(temperature) + '_' + str(exptimesum) + 's.fits'
 
+	exptimesum = int(exptimesum*10000)/10000.
+
 	while True:
 		if os.path.isfile(mlight) == False:
 			break
@@ -496,6 +502,24 @@ if args.light != None:
 		light_sigmaclip = False
 
 	light = combine(lights, method=args.light_method, unit='adu', sigma_clip=light_sigmaclip)
+
+	if args.header_from != None:
+		hdulist = fits.open(args.header_from)
+	else:
+		hdulist = fits.open(lightlist[0])
+	try:
+		headers = dict(hdulist[0].header)
+	except:
+		log("Error in header of header reference")
+		log("Try to fix...")
+		hdulist.verify('fix')
+		headers = dict(hdulist[0].header)
+	headers[args.fits_header_exptime] = exptimesum
+	for k, i in headers.items():
+		if type(i) is fits.header._HeaderCommentaryCards:
+			headers[k] = ''
+	light.header = headers
+	
 
 	light.write(mlight)
 	log("Processing completed.")
