@@ -10,3 +10,5 @@ dist
 controller.spec
 __pycache__
 parser_*
+output.txt
+offset.txt
