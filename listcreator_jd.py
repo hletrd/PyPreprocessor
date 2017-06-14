@@ -51,6 +51,7 @@ time_interval = args.time_interval / 86400.
 
 time_now = time_start
 cnt = 0
+groupid = 0
 groups = []
 while time_now <= JDs[-1][1]:
 	groups.append([])
@@ -59,7 +60,7 @@ while time_now <= JDs[-1][1]:
 		groups[-1].append(JDs[cnt])
 		cnt += 1
 	if len(groups[-1]) > 0:
-		dirname = args.output_prefix + 'grouped_' + str(time_now - time_interval) + '_' + str(time_now)
+		dirname = args.output_prefix + str(groupid) + '_grouped_' + str(time_now - time_interval) + '_' + str(time_now)
 		log('Groupping ' + str(len(groups[-1])) + ' objects into ' + dirname)
 		try:
 			os.mkdir(dirname)
@@ -67,4 +68,5 @@ while time_now <= JDs[-1][1]:
 			pass
 		for i in groups[-1]:
 			os.rename(i[0], dirname + '/' + i[0])
+		groupid += 1
 

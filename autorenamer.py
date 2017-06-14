@@ -40,3 +40,4 @@ for i in lst:
 		os.rename(i, newname)
 	except:
 		log("Error while reading file " + i)
+

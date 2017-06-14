@@ -54,7 +54,7 @@ for i in lst:
 			log('Pixel value: ' + str(avg_tmp))
 			var = float(avg_tmp) / avg
 			if var > 1 + args.threshold or var < args.threshold:
-				log('Filtering out the image ' + i)
+				log('Discarded image ' + i)
 			else:
 				log('Accepted image ' + i)
 				lst_out.append(i)
