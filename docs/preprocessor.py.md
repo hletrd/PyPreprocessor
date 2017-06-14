@@ -79,3 +79,8 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--offset```
   * Accepts offset file output from [cometregister.py](../cometregister.py).
   * Automatically shifts each image before combining to make sure comet is aligned in final image.
+  
+#### Misc
+* ```--header_from```
+  * Select an image to provide the header for the final image.
+  * By default, 1st light image is selected.
