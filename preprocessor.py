@@ -36,6 +36,7 @@ parser.add_argument('--fits_header_filter', default='FILTER')
 
 parser.add_argument('--filter_threshold')
 parser.add_argument('--header_from', default=None)
+parser.add_argument('--pedestal', default=1024, type=int)
 
 
 parser.add_argument('--offset', default=None)
@@ -465,6 +466,7 @@ if args.light != None:
 
 				#regularize exposure time
 				lights[lightcnt] = lights[lightcnt].multiply(exptime / exptimenow)
+				lights[lightcnt] = lights[lightcnt].add(args.pedestal * units.astrophys.adu)
 
 				if args.offset != None:
 					try:

@@ -84,3 +84,7 @@ $ python preprocessor.py --masterbias=masterbias_-20.0.fits --masterdark=masterd
 * ```--header_from```
   * Select an image to provide the header for the final image.
   * By default, 1st light image is selected.
+
+* ```--pedestal```
+  * Add constant to each calibrated image.
+  * Default value is ```1024```.
