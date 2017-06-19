@@ -53,7 +53,7 @@ for i in lst:
 			avg_tmp = np.mean(data)
 			log('Pixel value: ' + str(avg_tmp))
 			var = float(avg_tmp) / avg
-			if var > 1 + args.threshold or var < args.threshold:
+			if var > 1 + args.threshold or var < 1 - args.threshold:
 				log('Discarded image ' + i)
 			else:
 				log('Accepted image ' + i)
