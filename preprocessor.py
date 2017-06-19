@@ -1,6 +1,6 @@
 from ccdproc import combine, CCDData, ccd_process, subtract_bias, subtract_dark, flat_correct
 import astropy.io.fits as fits, astropy.units as units
-import astroscrappy
+#import astroscrappy
 import numpy as np
 import argparse, os, re, copy
 #import tensorflow as tf
